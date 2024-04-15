@@ -1,0 +1,68 @@
+---
+  - name: Install PHP and extensions
+    apt: name={{ item }} state=present update_cache=yes
+    tags: php
+    with_items:
+        - php8.3-cli
+        - php8.3-curl
+        - php8.3-fpm
+        - php8.3-gd
+        - php8.3-mailparse
+        - php8.3-mbstring
+        - php8.3-mysql
+        - php8.3-xml
+        - php8.3-zip
+        - composer
+    when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+
+  - name: ensure php-fpm is started and enabled on boot
+    service:
+      name: php8.3-fpm
+      state: started
+      enabled: true
+    tags:
+      - php
+
+  - name: ensure max_input_vars is configured for php-fpm
+    lineinfile:
+      path: /etc/php/8.3/fpm/php.ini
+      regexp: '^max_input_vars ='
+      line: 'max_input_vars = 100000'
+      insertafter: '^\[PHP\]'
+    notify:
+      - Restart php-fpm
+    tags:
+      - php
+
+  - name: ensure post_max_size is configured for php-fpm
+    lineinfile:
+      path: /etc/php/8.3/fpm/php.ini
+      regexp: '^post_max_size ='
+      line: 'post_max_size = 1024M'
+      insertafter: '^\[PHP\]'
+    notify:
+      - Restart php-fpm
+    tags:
+      - php
+
+  - name: ensure upload_max_filesize is configured for php-fpm
+    lineinfile:
+      path: /etc/php/8.3/fpm/php.ini
+      regexp: '^upload_max_filesize ='
+      line: 'upload_max_filesize = 1024M'
+      insertafter: '^\[PHP\]'
+    notify:
+      - Restart php-fpm
+    tags:
+      - php
+
+  - name: ensure max_input_vars is configured for php-fpm
+    lineinfile:
+      path: /etc/php/8.3/fpm/php.ini
+      regexp: '^memory_limit ='
+      line: 'memory_limit = 512M'
+      insertafter: '^\[PHP\]'
+    notify:
+      - Restart php-fpm
+    tags:
+      - php

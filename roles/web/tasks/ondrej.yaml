@@ -1,0 +1,5 @@
+- name: Enable ondrejs PHP repository permanently
+  tags: ondrej
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present

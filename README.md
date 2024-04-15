@@ -1,0 +1,1 @@
+ansible-playbook --ask-vault-pass -i inventory/sasin91.yaml single-server.yaml

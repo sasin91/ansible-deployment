@@ -1,0 +1,9 @@
+- import_tasks: ondrej.yaml
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+- import_tasks: php.yaml
+- import_tasks: nodesource.yaml
+- import_tasks: nginx.yaml
+- import_tasks: dotenv.yaml
+- import_tasks: cron.yaml
+- import_tasks: letsencrypt.yaml
+- import_tasks: redis.yaml

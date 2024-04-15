@@ -1,0 +1,68 @@
+- name: Make sure apache related packages are removed
+  tags: nginx
+  apt: name="{{ packages }}" state=absent purge=yes
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  vars:
+      packages:
+      - apache2
+      - apache2-utils
+
+- name: Install nginx
+  tags: nginx
+  apt: name=nginx state=present
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+
+- name: Make sure nginx is running and is started on boot
+  tags: nginx
+  service: name=nginx state=started enabled=yes
+
+- name: Make sure nginx is configured
+  tags: nginx
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  notify:
+    - Restart nginx
+
+- name: Make sure nginx virtual hosts are configured
+  tags: nginx
+  template: src=nginx-virtualhost.conf.j2 dest=/etc/nginx/sites-available/{{ item.key }}.conf
+  with_dict: "{{ virtualhosts }}"
+  notify:
+    - Restart nginx
+
+- name: Enable new site
+  file:
+    src: /etc/nginx/sites-available/{{ item.key }}.conf
+    dest: /etc/nginx/sites-enabled/{{ item.key }}.conf
+    state: link
+  with_dict: "{{ virtualhosts }}"
+  notify: Restart nginx
+
+- name: Create public directory
+  tags: nginx
+  file: path=/var/www/{{ item.key }}/public state=directory owner=www-data group=www-data mode=0775
+  with_dict: "{{ virtualhosts }}"
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+
+- name: ensure nginx is started and enabled at boot
+  service:
+    name: nginx
+    state: started
+    enabled: true
+  tags:
+    - nginx
+
+- name: ensure ufw allows traffic to port 80
+  ufw:
+    rule: allow
+    port: '80'
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  tags:
+    - nginx
+
+- name: ensure ufw allows traffic to port 443
+  ufw:
+    rule: allow
+    port: '443'
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  tags:
+    - nginx

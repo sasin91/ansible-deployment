@@ -1,0 +1,10 @@
+- name: ensure MeiliSearch is installed
+  package:
+    name:
+      - meilisearch
+  tags:
+    - search
+
+- name: Make sure meilisearch is running and is started on boot
+  tags: meilisearch
+  service: name=meilisearch state=started enabled=yes
